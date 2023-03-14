@@ -1,2 +1,2 @@
 def test_core():
-    import spox_control  # noqa
+    import spox_array  # noqa
