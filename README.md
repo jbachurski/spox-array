@@ -10,7 +10,7 @@ It allows you to pass a special wrapper object, `SpoxArray`, into functions like
 
 ```py
 import numpy as np
-from spox_array import SpoxArray
+from spox_array import wrap, unwrap
 from spox import argument, Tensor, Var
 
 # SpoxArray implements a np.ndarray (though it isn't a subclass)
@@ -24,11 +24,13 @@ def diff_loss(a: np.ndarray) -> np.ndarray:
 
 x: Var = argument(Tensor(float, ('N', 2)))
 # We wrap the argument with the array interface, and then extract the Var.
+# wrap(Var) -> np.ndarray  (SpoxArray under the hood)
+# unwrap(SpoxArray) -> Var
 # (the exact syntax for wrapping and unwrapping is preliminary)
-f: Var = col_loss(SpoxArray(x)).__var__()
+f: Var = unwrap(col_loss(wrap(x)))
 
-y: Var = argument(Tensor(float, ('M')))
-g: Var = diff_loss(SpoxArray(y)).__var__()
+y: Var = argument(Tensor(float, ('M',)))
+g: Var = unwrap(diff_loss(wrap(y)))
 
 # Do whatever you would like in Spox with the Vars f and g!
 ```
