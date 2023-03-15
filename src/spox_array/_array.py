@@ -150,7 +150,7 @@ def promote(
             return (
                 op.cast(obj.__var__(), to=target_type)
                 if obj.dtype != target_type
-                else obj
+                else obj.__var__()
             )
         return const(obj, dtype=target_type)
 
