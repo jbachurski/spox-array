@@ -1,17 +1,18 @@
 import functools
 from typing import Any, Iterable, Optional
-import numpy as np
-import numpy.typing as npt
-from spox import Var
-import spox.opset.ai.onnx.v17 as op
-import numpy.lib.mixins
 
+import numpy as np
+import numpy.lib.mixins
+import numpy.typing as npt
+
+import spox.opset.ai.onnx.v17 as op
+from spox import Var
 
 UFUNC_HANDLERS: dict[str, dict[str, Any]] = {}
 FUNCTION_HANDLERS: dict[str, Any] = {}
 
 
-def implements(target = None, *, name: str | None = None, method: str | None = None):
+def implements(target=None, *, name: str | None = None, method: str | None = None):
     def decorator(fun):
         nonlocal name
         if name is None:
@@ -54,7 +55,10 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
         return f"{self.__class__.__name__}({self._var})"
 
     def __array_ufunc__(self, ufunc: np.ufunc, method: str, *inputs, **kwargs):
-        if ufunc.__name__ in UFUNC_HANDLERS and method in UFUNC_HANDLERS[ufunc.__name__]:
+        if (
+            ufunc.__name__ in UFUNC_HANDLERS
+            and method in UFUNC_HANDLERS[ufunc.__name__]
+        ):
             return UFUNC_HANDLERS[ufunc.__name__][method](*inputs, **kwargs)
         raise NotImplementedError(f"{ufunc = }, {method = }, {inputs = }, {kwargs = }")
 
@@ -65,7 +69,10 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
 
 
 def promote(
-    *args: SpoxArray | npt.ArrayLike, floating: bool = False, casting: str | None = None, dtype: Any = None
+    *args: SpoxArray | npt.ArrayLike,
+    floating: bool = False,
+    casting: str | None = None,
+    dtype: Any = None,
 ) -> Iterable[Var]:
     """
     Apply constant promotion and type promotion to given parameters,
@@ -90,14 +97,14 @@ def _nested_structure(xs):
     if not isinstance(xs, Iterable) or isinstance(xs, numpy.ndarray):
         return [xs], lambda x: x
     sub = [_nested_structure(x) for x in xs]
-    flat = sum((chunk for chunk, _ in sub), [])
+    flat: list[Any] = sum((chunk for chunk, _ in sub), [])
 
     def restructure(*args):
         i = 0
         result = []
         for ch, re in sub:
             n = len(ch)
-            result.append(re(*args[i:i+n]))
+            result.append(re(*args[i : i + n]))
             i += n
         return result
 
@@ -108,8 +115,13 @@ def promote_args(fun):
     @functools.wraps(fun)
     def inner(*args, **kwargs):
         flat_args, restructure = _nested_structure(args)
-        promoted_args = promote(*flat_args, casting=kwargs.pop('casting', None), dtype=kwargs.pop('dtype', None))
+        promoted_args = promote(
+            *flat_args,
+            casting=kwargs.pop("casting", None),
+            dtype=kwargs.pop("dtype", None),
+        )
         return fun(*restructure(*promoted_args), **kwargs)
+
     return inner
 
 
@@ -120,10 +132,13 @@ def handle_out(fun):
         result: SpoxArray = fun(*args, **kwargs)
         if out is not None:
             if not isinstance(out, SpoxArray):
-                raise TypeError(f"Output for SpoxArrays must also be written to one, not {type(out).__name__}.")
+                raise TypeError(
+                    f"Output for SpoxArrays must also be written to one, not {type(out).__name__}."
+                )
             out.__var__(result.__var__())
             return out
         return result
+
     return inner
 
 
@@ -131,28 +146,14 @@ def wrap_var(fun):
     @functools.wraps(fun)
     def inner(*args, **kwargs):
         return SpoxArray(fun(*args, **kwargs))
+
     return inner
 
 
 @implements
 def result_type(*args):
-    targets: list[np.dtype, npt.ArrayLike] = [
+    targets: list[np.dtype | npt.ArrayLike] = [
         x.__var__().unwrap_tensor().dtype if isinstance(x, SpoxArray) else x
         for x in args
     ]
     return np.dtype(np.result_type(*targets))
-
-
-@implements(method="__call__")
-@wrap_var
-@promote_args
-def add(x: Var, y: Var):
-    return op.add(x, y)
-
-
-@implements
-@handle_out
-@wrap_var
-@promote_args
-def concatenate(arrays: Iterable[Var], axis: int = 0):
-    return op.concat(list(arrays), axis=axis)
