@@ -94,31 +94,26 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
                 for d, axis_index in enumerate(index)
                 if isinstance(axis_index, int)
             }
+            starts: list[int] = [
+                x.start if x.start is not None else 0 for x in axis_slices.values()
+            ]
+            ends: list[int] = [
+                x.stop
+                if x.stop is not None
+                else (INDEX_MAX if x.step > 0 else INDEX_MIN)
+                for x in axis_slices.values()
+            ]
+            steps: list[int] = [
+                x.step if x.step is not None else 1 for x in axis_slices.values()
+            ]
             indexed = (
                 type(self)(
                     op.slice(
                         self.__var__(),
-                        const(
-                            [
-                                x.start if x.start is not None else None
-                                for x in axis_slices.values()
-                            ]
-                        ),
-                        const(
-                            [
-                                x.stop
-                                if x.stop is not None
-                                else (INDEX_MAX if x.step > 0 else INDEX_MIN)
-                                for x in axis_slices.values()
-                            ]
-                        ),
+                        const(starts),
+                        const(ends),
                         const(list(axis_slices.keys())),
-                        const(
-                            [
-                                x.step if x.step is not None else 1
-                                for x in axis_slices.values()
-                            ]
-                        ),
+                        const(steps),
                     )
                 )
                 if axis_slices
