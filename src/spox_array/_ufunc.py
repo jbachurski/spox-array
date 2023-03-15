@@ -5,16 +5,13 @@ import numpy as np
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import const, handle_out, implements, promote_args, unwrap_vars, wrap_var
+from ._array import const, implements, prepare_call
 
 
 def binary_ufunc_call(obj=None, *, floating=False):
     def wrapper(fun):
         @implements(method="__call__")
-        @handle_out
-        @wrap_var
-        @promote_args(floating=floating)
-        @unwrap_vars
+        @prepare_call(floating=floating)
         @functools.wraps(fun)
         def inner(*args, **kwargs):
             return fun(*args, **kwargs)
@@ -57,9 +54,6 @@ def power(x: Var, y: Var):
 
 
 @implements(name="add", method="reduce")
-@handle_out
-@wrap_var
-@promote_args
-@unwrap_vars
+@prepare_call
 def add_reduce(x: Var, axis: int = 0, keepdims: bool = False):
     return op.reduce_sum(x, axes=const([axis]), keepdims=keepdims)

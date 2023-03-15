@@ -65,7 +65,6 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             and method in UFUNC_HANDLERS[ufunc.__name__]
         ):
             return UFUNC_HANDLERS[ufunc.__name__][method](*inputs, **kwargs)
-        # raise NotImplementedError(f"{ufunc = }, {method = }, {inputs = }, {kwargs = }")
         return NotImplemented
 
     def __array_function__(self, func, types, args, kwargs):
@@ -74,7 +73,6 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             return NotImplemented
         if func.__name__ in FUNCTION_HANDLERS:
             return FUNCTION_HANDLERS[func.__name__](*args, **kwargs)
-        # raise NotImplementedError(f"{func = }, {types = }, {args = }, {kwargs = }")
         return NotImplemented
 
     def __getitem__(self, index):
@@ -244,3 +242,18 @@ def result_type(*args):
         for x in args
     ]
     return np.dtype(np.result_type(*targets))
+
+
+def prepare_call(obj=None, *, floating=False):
+    def wrapper(fun):
+        @handle_out
+        @wrap_var
+        @promote_args(floating=floating)
+        @unwrap_vars
+        @functools.wraps(fun)
+        def inner(*args, **kwargs):
+            return fun(*args, **kwargs)
+
+        return inner
+
+    return wrapper(obj) if obj is not None else wrapper
