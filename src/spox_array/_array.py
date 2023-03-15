@@ -88,6 +88,11 @@ def promote(
         target_type = dtype
 
     def _promote_target(obj: Var | npt.ArrayLike) -> Optional[Var]:
+        to_cast = obj.dtype if isinstance(obj, SpoxArray) else obj
+        if casting is not None and not np.can_cast(to_cast, target_type, casting):
+            raise TypeError(
+                f"Cannot cast {obj.dtype} to {target_type} with {casting=}."
+            )
         if isinstance(obj, SpoxArray):
             return op.cast(obj.__var__(), to=target_type)
         return const(obj, dtype=target_type)
