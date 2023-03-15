@@ -24,6 +24,7 @@ def diff_loss(a: np.ndarray) -> np.ndarray:
 
 x: Var = argument(Tensor(float, ('N', 2)))
 # We wrap the argument with the array interface, and then extract the Var.
+# (the exact syntax for wrapping and unwrapping is preliminary)
 f: Var = col_loss(SpoxArray(x)).__var__()
 
 y: Var = argument(Tensor(float, ('M')))
