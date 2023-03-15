@@ -24,6 +24,7 @@ def test_add():
 
 
 def test_add_reduce():
+    assert val(np.add.reduce(arr(const([1, 2, 3])), keepdims=False)) == 6
     assert val(np.add.reduce(arr(const([1, 2, 3])), keepdims=True)) == [6]
 
 
