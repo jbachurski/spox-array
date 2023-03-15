@@ -100,21 +100,19 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             ends: list[int] = [
                 x.stop
                 if x.stop is not None
-                else (INDEX_MAX if x.step > 0 else INDEX_MIN)
+                else (INDEX_MAX if x.step is None or x.step > 0 else INDEX_MIN)
                 for x in axis_slices.values()
             ]
             steps: list[int] = [
                 x.step if x.step is not None else 1 for x in axis_slices.values()
             ]
-            indexed = (
-                type(self)(
-                    op.slice(
-                        self.__var__(),
-                        const(starts),
-                        const(ends),
-                        const(list(axis_slices.keys())),
-                        const(steps),
-                    )
+            indexed: Var = (
+                op.slice(
+                    self.__var__(),
+                    const(starts),
+                    const(ends),
+                    const(list(axis_slices.keys())),
+                    const(steps),
                 )
                 if axis_slices
                 else self.__var__()
