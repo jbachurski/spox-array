@@ -73,7 +73,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
 def promote(
     *args: Var | SpoxArray | npt.ArrayLike,
     floating: bool = False,
-    casting: str | None = None,
+    casting: str = "same_kind",
     dtype: Any = None,
 ) -> Sequence[SpoxArray]:
     """
