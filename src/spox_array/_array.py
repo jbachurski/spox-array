@@ -147,7 +147,11 @@ def promote(
                 f"Cannot cast {obj.dtype} to {target_type} with {casting=}."
             )
         if isinstance(obj, SpoxArray):
-            return op.cast(obj.__var__(), to=target_type)
+            return (
+                op.cast(obj.__var__(), to=target_type)
+                if obj.dtype != target_type
+                else obj
+            )
         return const(obj, dtype=target_type)
 
     return tuple(SpoxArray(var) for var in map(_promote_target, args))
