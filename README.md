@@ -49,6 +49,8 @@ Currently, only a few features are implemented:
 Install `requirements.txt` and use `pre-commit install` to install the pre commit hooks
 and `pre-commit run --all-files` to run them manually.
 
+`pip install -e .` and `pytest tests` should be enough to run the test suite.
+
 When attempting to use Spox value propagation, it's recommended to
 use ONNX Runtime for the backend (due to issues in `onnx.reference`):
 
