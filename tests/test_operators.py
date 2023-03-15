@@ -1,6 +1,8 @@
+import operator
 from typing import cast
 
 import numpy as np
+import pytest
 
 from spox import Var
 from spox_array import SpoxArray, const
@@ -16,11 +18,22 @@ def val(array: np.ndarray):
     return np.asarray(array)
 
 
-def test_add():
-    assert val(arr(const(1.0)) + arr(const(2.0))) == 3
-    assert val(arr(const(1.0)) + 2.0) == 3
-    assert val(2.0 + arr(const(1.0))) == 3
-    np.testing.assert_allclose(val(arr(const(1.0)) + np.array([2.0, -1.0])), [3, 0])
+def assert_eq(got, expected):
+    expected = np.array(expected)
+    assert got.dtype == expected.dtype
+    assert got.shape == expected.shape
+    np.testing.assert_allclose(got, expected)
+
+
+@pytest.mark.parametrize(
+    "bin_op",
+    [operator.add, operator.sub, operator.mul, operator.truediv, operator.floordiv],
+)
+@pytest.mark.parametrize("x", [1.5, 3, 5, [[2, 3]]])
+@pytest.mark.parametrize("y", [0.5, 1, 2, [[1], [1.5]]])
+def test_arithmetic(bin_op, x, y):
+    x, y = np.array(x), np.array(y)
+    assert_eq(val(bin_op(arr(const(x)), arr(const(y)))), bin_op(x, y))
 
 
 def test_add_reduce():

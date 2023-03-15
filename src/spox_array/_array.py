@@ -133,6 +133,22 @@ def promote_args(fun):
     return inner
 
 
+def promote_args_floating(fun):
+    @functools.wraps(fun)
+    def inner(*args, **kwargs):
+        flat_args, restructure = _nested_structure(args)
+        promoted_args = promote(
+            *flat_args,
+            casting=kwargs.pop("casting", None),
+            dtype=kwargs.pop("dtype", None),
+            floating=True,
+        )
+        re_args = restructure(*promoted_args)
+        return fun(*re_args, **kwargs)
+
+    return inner
+
+
 def handle_out(fun):
     @functools.wraps(fun)
     def inner(*args, **kwargs):
