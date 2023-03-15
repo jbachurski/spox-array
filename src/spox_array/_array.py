@@ -59,6 +59,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
         return f"{self.__class__.__name__}({self._var})"
 
     def __array_ufunc__(self, ufunc: np.ufunc, method: str, *inputs, **kwargs):
+        _ = self  # Ignore self
         if (
             ufunc.__name__ in UFUNC_HANDLERS
             and method in UFUNC_HANDLERS[ufunc.__name__]
@@ -68,6 +69,9 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
         return NotImplemented
 
     def __array_function__(self, func, types, args, kwargs):
+        _ = self  # Ignore self
+        if set(types) != {SpoxArray}:
+            return NotImplemented
         if func.__name__ in FUNCTION_HANDLERS:
             return FUNCTION_HANDLERS[func.__name__](*args, **kwargs)
         # raise NotImplementedError(f"{func = }, {types = }, {args = }, {kwargs = }")
