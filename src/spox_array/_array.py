@@ -122,7 +122,8 @@ def promote_args(fun):
             casting=kwargs.pop("casting", None),
             dtype=kwargs.pop("dtype", None),
         )
-        return fun(*restructure(*promoted_args), **kwargs)
+        re_args = restructure(*promoted_args)
+        return fun(*re_args, **kwargs)
 
     return inner
 
