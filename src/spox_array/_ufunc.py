@@ -56,11 +56,6 @@ def power(x: Var, y: Var):
     return op.pow(x, y)
 
 
-@binary_ufunc_call
-def mod(x: Var, y: Var):
-    return op.pow(x, y)
-
-
 @implements(name="add", method="reduce")
 @handle_out
 @wrap_var
