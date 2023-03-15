@@ -3,7 +3,7 @@ from typing import cast
 import numpy as np
 
 from spox import Var
-from spox_array import SpoxArray
+from spox_array._array import SpoxArray
 
 
 def arr(var: Var) -> np.ndarray:
