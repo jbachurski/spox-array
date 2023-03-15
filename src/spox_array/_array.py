@@ -1,4 +1,5 @@
 import functools
+import operator
 from typing import Any, Iterable, Optional, Sequence
 
 import numpy as np
@@ -10,6 +11,9 @@ from spox import Var
 
 UFUNC_HANDLERS: dict[str, dict[str, Any]] = {}
 FUNCTION_HANDLERS: dict[str, Any] = {}
+
+INDEX_MIN: int = np.iinfo(np.int64).min
+INDEX_MAX: int = np.iinfo(np.int64).max
 
 
 def implements(target=None, *, name: str | None = None, method: str | None = None):
@@ -68,6 +72,62 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             return FUNCTION_HANDLERS[func.__name__](*args, **kwargs)
         # raise NotImplementedError(f"{func = }, {types = }, {args = }, {kwargs = }")
         return NotImplemented
+
+    def __getitem__(self, index):
+        index_ = index
+        try:
+            index = operator.index(index)
+        except TypeError:
+            pass
+        else:
+            pass
+        if isinstance(index, slice):
+            index = (index,) + (slice(None),) * (len(self.shape) - 1)
+        if isinstance(index, tuple):
+            axis_slices = {
+                d: axis_slice
+                for d, axis_slice in enumerate(index)
+                if isinstance(axis_slice, slice) and axis_slice != slice(None)
+            }
+            axis_indices = {
+                d: axis_index
+                for d, axis_index in enumerate(index)
+                if isinstance(axis_index, int)
+            }
+            indexed = (
+                type(self)(
+                    op.slice(
+                        self.__var__(),
+                        const(
+                            [
+                                x.start if x.start is not None else None
+                                for x in axis_slices.values()
+                            ]
+                        ),
+                        const(
+                            [
+                                x.stop
+                                if x.stop is not None
+                                else (INDEX_MAX if x.step > 0 else INDEX_MIN)
+                                for x in axis_slices.values()
+                            ]
+                        ),
+                        const(list(axis_slices.keys())),
+                        const(
+                            [
+                                x.step if x.step is not None else 1
+                                for x in axis_slices.values()
+                            ]
+                        ),
+                    )
+                )
+                if axis_slices
+                else self.__var__()
+            )
+            for axis, axis_index in sorted(axis_indices.items(), reverse=True):
+                indexed = op.gather(indexed, const(axis_index), axis=axis)
+            return SpoxArray(indexed)
+        raise TypeError(f"Cannot index SpoxArray with {index_!r}.")
 
 
 def promote(
