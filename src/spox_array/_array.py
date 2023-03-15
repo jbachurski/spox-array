@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Sequence
 
 import numpy as np
 import numpy.lib.mixins
@@ -75,7 +75,7 @@ def promote(
     floating: bool = False,
     casting: str | None = None,
     dtype: Any = None,
-) -> Iterable[Var]:
+) -> Sequence[SpoxArray]:
     """
     Apply constant promotion and type promotion to given parameters,
     creating constants and/or casting.
@@ -92,7 +92,7 @@ def promote(
             return op.cast(obj.__var__(), to=target_type)
         return const(obj, dtype=target_type)
 
-    return tuple(var for var in map(_promote_target, args))
+    return tuple(SpoxArray(var) for var in map(_promote_target, args))
 
 
 def _nested_structure(xs):
@@ -141,6 +141,18 @@ def handle_out(fun):
             out.__var__(result.__var__())
             return out
         return result
+
+    return inner
+
+
+def unwrap_vars(fun):
+    @functools.wraps(fun)
+    def inner(*args, **kwargs):
+        flat_args, restructure = _nested_structure(args)
+        re_args = restructure(
+            *(arg.__var__() if isinstance(arg, SpoxArray) else arg for arg in flat_args)
+        )
+        return fun(*re_args, **kwargs)
 
     return inner
 
