@@ -20,7 +20,7 @@ def concatenate(arrays: Sequence[Var], axis: int = 0):
 @wrap_var
 @promote_args
 @unwrap_vars
-def mean(var: Var, axis: int | tuple[int, ...] = 0, keepdims: bool = False):
-    if not isinstance(axis, Iterable):
+def mean(var: Var, axis: int | tuple[int, ...] | None = None, keepdims: bool = False):
+    if axis is not None and not isinstance(axis, Iterable):
         axis = (axis,)
     return op.reduce_mean(var, axes=axis, keepdims=keepdims)
