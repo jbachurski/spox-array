@@ -6,7 +6,8 @@
 [array API](https://data-apis.org/array-api/2022.12/index.html)
 compatible with `numpy`.
 
-It allows you to pass a special wrapper object, `SpoxArray`, into functions like these seamlessly:
+It allows you to pass a special wrapper object, `SpoxArray`,
+into functions like [these](https://github.com/jbachurski/spox-array/blob/main/tests/test_examples.py) seamlessly:
 
 ```py
 import numpy as np
@@ -46,5 +47,15 @@ Currently, only a few features are implemented:
 ## Development
 
 Install `requirements.txt` and use `pre-commit install` to install the pre commit hooks
+and `pre-commit run --all-files` to run them manually.
 
-- and `pre-commit run --all-files` to run them manually.
+When attempting to use Spox value propagation, it's recommended to
+use ONNX Runtime for the backend (due to issues in `onnx.reference`):
+
+```py
+import logging
+import spox._future
+
+logging.getLogger().setLevel(logging.DEBUG)
+spox._future.set_value_prop_backend(spox._future.ValuePropBackend.ONNXRUNTIME)
+```
