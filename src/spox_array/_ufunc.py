@@ -5,41 +5,23 @@ import numpy as np
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import (
-    const,
-    handle_out,
-    implements,
-    promote_args,
-    promote_args_floating,
-    unwrap_vars,
-    wrap_var,
-)
+from ._array import const, handle_out, implements, promote_args, unwrap_vars, wrap_var
 
 
-def binary_ufunc_call(fun):
-    @implements(method="__call__")
-    @handle_out
-    @wrap_var
-    @promote_args
-    @unwrap_vars
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        return fun(*args, **kwargs)
+def binary_ufunc_call(obj=None, *, floating=False):
+    def wrapper(fun):
+        @implements(method="__call__")
+        @handle_out
+        @wrap_var
+        @promote_args(floating=floating)
+        @unwrap_vars
+        @functools.wraps(fun)
+        def inner(*args, **kwargs):
+            return fun(*args, **kwargs)
 
-    return inner
+        return inner
 
-
-def binary_ufunc_call_floating(fun):
-    @implements(method="__call__")
-    @handle_out
-    @wrap_var
-    @promote_args_floating
-    @unwrap_vars
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        return fun(*args, **kwargs)
-
-    return inner
+    return wrapper(obj) if obj is not None else wrapper
 
 
 @binary_ufunc_call
@@ -57,7 +39,7 @@ def multiply(x: Var, y: Var):
     return op.mul(x, y)
 
 
-@binary_ufunc_call_floating
+@binary_ufunc_call(floating=True)
 def divide(x: Var, y: Var):
     return op.div(x, y)
 

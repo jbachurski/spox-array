@@ -71,7 +71,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
 
 
 def promote(
-    *args: SpoxArray | npt.ArrayLike,
+    *args: Var | SpoxArray | npt.ArrayLike,
     floating: bool = False,
     casting: str | None = None,
     dtype: Any = None,
@@ -118,35 +118,23 @@ def _nested_structure(xs):
     return flat, restructure
 
 
-def promote_args(fun):
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        flat_args, restructure = _nested_structure(args)
-        promoted_args = promote(
-            *flat_args,
-            casting=kwargs.pop("casting", None),
-            dtype=kwargs.pop("dtype", None),
-        )
-        re_args = restructure(*promoted_args)
-        return fun(*re_args, **kwargs)
+def promote_args(obj=None, *, floating=False):
+    def wrapper(fun):
+        @functools.wraps(fun)
+        def inner(*args, **kwargs):
+            flat_args, restructure = _nested_structure(args)
+            promoted_args = promote(
+                *flat_args,
+                casting=kwargs.pop("casting", None),
+                dtype=kwargs.pop("dtype", None),
+                floating=floating,
+            )
+            re_args = restructure(*promoted_args)
+            return fun(*re_args, **kwargs)
 
-    return inner
+        return inner
 
-
-def promote_args_floating(fun):
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        flat_args, restructure = _nested_structure(args)
-        promoted_args = promote(
-            *flat_args,
-            casting=kwargs.pop("casting", None),
-            dtype=kwargs.pop("dtype", None),
-            floating=True,
-        )
-        re_args = restructure(*promoted_args)
-        return fun(*re_args, **kwargs)
-
-    return inner
+    return wrapper(obj) if obj is not None else wrapper
 
 
 def handle_out(fun):
@@ -189,7 +177,9 @@ def wrap_var(fun):
 @implements
 def result_type(*args):
     targets: list[np.dtype | npt.ArrayLike] = [
-        x.__var__().unwrap_tensor().dtype if isinstance(x, SpoxArray) else x
+        x.__var__().unwrap_tensor().dtype
+        if isinstance(x, SpoxArray)
+        else (x.unwrap_tensor().dtype if isinstance(x, Var) else x)
         for x in args
     ]
     return np.dtype(np.result_type(*targets))
