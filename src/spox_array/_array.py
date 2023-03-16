@@ -161,6 +161,8 @@ def promote(
     Apply constant promotion and type promotion to given parameters,
     creating constants and/or casting.
     """
+    if not args:
+        return ()
     if dtype is None:
         target_type = result_type(*args)
         if floating and not issubclass(target_type.type, np.floating):
@@ -203,18 +205,20 @@ def _nested_structure(xs):
     return flat, restructure
 
 
-def promote_args(obj=None, *, floating=False):
+def promote_args(obj=None, *, array_args: int | None = None, floating=False):
     def wrapper(fun):
         @functools.wraps(fun)
         def inner(*args, **kwargs):
-            flat_args, restructure = _nested_structure(args)
+            pref = args[:array_args] if array_args is not None else args
+            suff = args[array_args:] if array_args is not None else ()
+            flat_args, restructure = _nested_structure(pref)
             promoted_args = promote(
                 *flat_args,
                 casting=kwargs.pop("casting", None),
                 dtype=kwargs.pop("dtype", None),
                 floating=floating,
             )
-            re_args = restructure(*promoted_args)
+            re_args = tuple(restructure(*promoted_args)) + suff
             return fun(*re_args, **kwargs)
 
         return inner
@@ -270,11 +274,11 @@ def result_type(*args):
     return np.dtype(np.result_type(*targets))
 
 
-def prepare_call(obj=None, *, floating=False):
+def prepare_call(obj=None, *, array_args: int | None = None, floating: bool = False):
     def wrapper(fun):
         @handle_out
         @wrap_var
-        @promote_args(floating=floating)
+        @promote_args(array_args=array_args, floating=floating)
         @unwrap_vars
         @functools.wraps(fun)
         def inner(*args, **kwargs):
