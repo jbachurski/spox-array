@@ -177,7 +177,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
 
 def promote(
     *args: Var | SpoxArray | npt.ArrayLike,
-    floating: bool = False,
+    floating: int = 0,
     casting: str = "same_kind",
     dtype: Any = None,
 ) -> Sequence[SpoxArray]:
@@ -189,8 +189,14 @@ def promote(
         return ()
     if dtype is None:
         target_type = result_type(*args)
-        if floating and not issubclass(target_type.type, np.floating):
-            target_type = np.float64
+        if floating <= 0:
+            target_type = result_type(*args)
+        elif floating <= 1:
+            target_type = result_type(*args, np.float16)
+        elif floating <= 2:
+            target_type = np.common_type(np.array([], target_type))
+        else:
+            raise ValueError(f"Bad flag for floating: {floating}.")
     else:
         target_type = dtype
 
@@ -229,7 +235,7 @@ def _nested_structure(xs):
     return flat, restructure
 
 
-def promote_args(obj=None, *, array_args: int | None = None, floating=False):
+def promote_args(obj=None, *, array_args: int | None = None, floating: int = 0):
     def wrapper(fun):
         @functools.wraps(fun)
         def inner(*args, **kwargs):
@@ -290,7 +296,7 @@ def result_type(*args):
     return np.dtype(np.result_type(*targets))
 
 
-def prepare_call(obj=None, *, array_args: int | None = None, floating: bool = False):
+def prepare_call(obj=None, *, array_args: int | None = None, floating: int = 0):
     def wrapper(fun):
         @handle_out
         @promote_args(array_args=array_args, floating=floating)

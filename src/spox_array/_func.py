@@ -63,7 +63,7 @@ def sum_(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
 
 @implements
 @wrap_axis_singleton
-@prepare_call(array_args=1, floating=True)
+@prepare_call(array_args=1, floating=1)
 def mean(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
     return op.reduce_mean(var, axes=axis, keepdims=keepdims)
 

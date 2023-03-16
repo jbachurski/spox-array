@@ -8,7 +8,7 @@ from spox import Var
 from ._array import const, implements, prepare_call
 
 
-def prepare_ufunc_call(obj=None, *, floating=False):
+def prepare_ufunc_call(obj=None, *, floating: int = 0):
     def wrapper(fun):
         @implements(method="__call__")
         @prepare_call(floating=floating)
@@ -39,7 +39,7 @@ def multiply(x: Var, y: Var) -> Var:
     return op.mul(x, y)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=2)
 def divide(x: Var, y: Var) -> Var:
     return op.div(x, y)
 
@@ -59,17 +59,17 @@ def power(x: Var, y: Var) -> Var:
 # Trigonometric
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def sin(x: Var) -> Var:
     return op.sin(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def cos(x: Var) -> Var:
     return op.cos(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def tan(x: Var) -> Var:
     return op.tan(x)
 
@@ -77,17 +77,17 @@ def tan(x: Var) -> Var:
 # Inverse trigonometric
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arcsin(x: Var) -> Var:
     return op.asin(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arccos(x: Var) -> Var:
     return op.acos(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arctan(x: Var) -> Var:
     return op.atan(x)
 
@@ -95,17 +95,17 @@ def arctan(x: Var) -> Var:
 # Hyperbolic
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def sinh(x: Var) -> Var:
     return op.sinh(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def cosh(x: Var) -> Var:
     return op.cosh(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def tanh(x: Var) -> Var:
     return op.tanh(x)
 
@@ -113,17 +113,17 @@ def tanh(x: Var) -> Var:
 # Inverse hyperbolic
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arcsinh(x: Var) -> Var:
     return op.asinh(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arccosh(x: Var) -> Var:
     return op.acosh(x)
 
 
-@prepare_ufunc_call(floating=True)
+@prepare_ufunc_call(floating=1)
 def arctanh(x: Var) -> Var:
     return op.atanh(x)
 
