@@ -147,8 +147,32 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
     def T(self) -> "SpoxArray":
         return SpoxArray(np.transpose(self))
 
+    def copy(self) -> "SpoxArray":
+        return SpoxArray(self)
+
+    def astype(self, dtype: npt.DTypeLike) -> "SpoxArray":
+        return type(self)(op.cast(self.__var__(), to=dtype))
+
+    def reshape(self, shape, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.reshape(self, shape, **kwargs))
+
+    def flatten(self):
+        return self.reshape((-1,))
+
+    def sum(self, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.sum(self, **kwargs))
+
     def mean(self, **kwargs) -> "SpoxArray":
         return SpoxArray(np.mean(self, **kwargs))
+
+    def min(self, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.min(self, **kwargs))
+
+    def max(self, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.max(self, **kwargs))
+
+    def prod(self, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.prod(self, **kwargs))
 
 
 def promote(
