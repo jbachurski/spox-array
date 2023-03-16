@@ -8,7 +8,7 @@ from spox import Var
 from ._array import const, implements, prepare_call
 
 
-def binary_ufunc_call(obj=None, *, floating=False):
+def prepare_ufunc_call(obj=None, *, floating=False):
     def wrapper(fun):
         @implements(method="__call__")
         @prepare_call(floating=floating)
@@ -21,36 +21,114 @@ def binary_ufunc_call(obj=None, *, floating=False):
     return wrapper(obj) if obj is not None else wrapper
 
 
-@binary_ufunc_call
-def add(x: Var, y: Var):
+# Arithmetic
+
+
+@prepare_ufunc_call
+def add(x: Var, y: Var) -> Var:
     return op.add(x, y)
 
 
-@binary_ufunc_call
-def subtract(x: Var, y: Var):
+@prepare_ufunc_call
+def subtract(x: Var, y: Var) -> Var:
     return op.sub(x, y)
 
 
-@binary_ufunc_call
-def multiply(x: Var, y: Var):
+@prepare_ufunc_call
+def multiply(x: Var, y: Var) -> Var:
     return op.mul(x, y)
 
 
-@binary_ufunc_call(floating=True)
-def divide(x: Var, y: Var):
+@prepare_ufunc_call(floating=True)
+def divide(x: Var, y: Var) -> Var:
     return op.div(x, y)
 
 
-@binary_ufunc_call
-def floor_divide(x: Var, y: Var):
+@prepare_ufunc_call
+def floor_divide(x: Var, y: Var) -> Var:
     if issubclass(x.unwrap_tensor().dtype.type, np.floating):
         return op.floor(op.div(x, y))
     return op.div(x, y)
 
 
-@binary_ufunc_call
-def power(x: Var, y: Var):
+@prepare_ufunc_call
+def power(x: Var, y: Var) -> Var:
     return op.pow(x, y)
+
+
+# Trigonometric
+
+
+@prepare_ufunc_call(floating=True)
+def sin(x: Var) -> Var:
+    return op.sin(x)
+
+
+@prepare_ufunc_call(floating=True)
+def cos(x: Var) -> Var:
+    return op.cos(x)
+
+
+@prepare_ufunc_call(floating=True)
+def tan(x: Var) -> Var:
+    return op.tan(x)
+
+
+# Inverse trigonometric
+
+
+@prepare_ufunc_call(floating=True)
+def arcsin(x: Var) -> Var:
+    return op.asin(x)
+
+
+@prepare_ufunc_call(floating=True)
+def arccos(x: Var) -> Var:
+    return op.acos(x)
+
+
+@prepare_ufunc_call(floating=True)
+def arctan(x: Var) -> Var:
+    return op.atan(x)
+
+
+# Hyperbolic
+
+
+@prepare_ufunc_call(floating=True)
+def sinh(x: Var) -> Var:
+    return op.sinh(x)
+
+
+@prepare_ufunc_call(floating=True)
+def cosh(x: Var) -> Var:
+    return op.cosh(x)
+
+
+@prepare_ufunc_call(floating=True)
+def tanh(x: Var) -> Var:
+    return op.tanh(x)
+
+
+# Inverse hyperbolic
+
+
+@prepare_ufunc_call(floating=True)
+def arcsinh(x: Var) -> Var:
+    return op.asinh(x)
+
+
+@prepare_ufunc_call(floating=True)
+def arccosh(x: Var) -> Var:
+    return op.acosh(x)
+
+
+@prepare_ufunc_call(floating=True)
+def arctanh(x: Var) -> Var:
+    return op.atanh(x)
+
+
+# Reduce
 
 
 @implements(name="add", method="reduce")

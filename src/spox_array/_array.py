@@ -267,22 +267,14 @@ def handle_out(fun):
     return inner
 
 
-def unwrap_vars(fun):
+def var_wrapper(fun):
     @functools.wraps(fun)
     def inner(*args, **kwargs):
         flat_args, restructure = _nested_structure(args)
         re_args = restructure(
             *(arg.__var__() if isinstance(arg, SpoxArray) else arg for arg in flat_args)
         )
-        return fun(*re_args, **kwargs)
-
-    return inner
-
-
-def wrap_var(fun):
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        return SpoxArray(fun(*args, **kwargs))
+        return SpoxArray(fun(*re_args, **kwargs))
 
     return inner
 
@@ -301,9 +293,8 @@ def result_type(*args):
 def prepare_call(obj=None, *, array_args: int | None = None, floating: bool = False):
     def wrapper(fun):
         @handle_out
-        @wrap_var
         @promote_args(array_args=array_args, floating=floating)
-        @unwrap_vars
+        @var_wrapper
         @functools.wraps(fun)
         def inner(*args, **kwargs):
             return fun(*args, **kwargs)
