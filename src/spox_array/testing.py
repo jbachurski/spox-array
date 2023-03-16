@@ -26,7 +26,6 @@ def assert_eq(got, expected):
 def assert_equiv_prop(fun, *args, **kwargs):
     flat_args, restructure = _nested_structure(args)
     re_args = [arr(const(x)) for x in flat_args]
-    print(restructure(*re_args), kwargs)
     got = val(fun(*restructure(*re_args), **kwargs))
     expected = fun(*args, **kwargs)
     assert_eq(got, expected)
