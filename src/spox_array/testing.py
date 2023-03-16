@@ -3,7 +3,7 @@ from typing import cast
 import numpy as np
 
 from spox import Var
-from spox_array._array import SpoxArray
+from spox_array._array import SpoxArray, _nested_structure, const
 
 
 def arr(var: Var) -> np.ndarray:
@@ -21,3 +21,12 @@ def assert_eq(got, expected):
     assert got.dtype == expected.dtype
     assert got.shape == expected.shape
     np.testing.assert_allclose(got, expected)
+
+
+def assert_equiv_prop(fun, *args, **kwargs):
+    flat_args, restructure = _nested_structure(args)
+    re_args = [arr(const(x)) for x in flat_args]
+    print(restructure(*re_args), kwargs)
+    got = val(fun(*restructure(*re_args), **kwargs))
+    expected = fun(*args, **kwargs)
+    assert_eq(got, expected)
