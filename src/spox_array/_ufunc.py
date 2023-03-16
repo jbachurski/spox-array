@@ -57,6 +57,68 @@ def power(x: Var, y: Var) -> Var:
     return op.pow(x, y)
 
 
+# Unary
+
+
+@prepare_ufunc_call
+def isnan(x: Var) -> Var:
+    if not np.issubdtype(x.unwrap_tensor().dtype, np.floating):
+        return op.expand(const(False), op.shape(x))
+    return op.isnan(x)
+
+
+# Unary - signs
+
+
+@prepare_ufunc_call
+def absolute(x: Var) -> Var:
+    return op.abs(x)
+
+
+@prepare_ufunc_call
+def sign(x: Var) -> Var:
+    return op.sign(x)
+
+
+# Unary - rounding
+
+
+@prepare_ufunc_call(floating=1)
+def ceil(x: Var) -> Var:
+    return op.ceil(x)
+
+
+@prepare_ufunc_call(floating=1)
+def floor(x: Var) -> Var:
+    return op.floor(x)
+
+
+# Unary - special-case exponents
+
+
+@prepare_ufunc_call
+def reciprocal(x: Var) -> Var:
+    return op.reciprocal(x)
+
+
+@prepare_ufunc_call(floating=1)
+def sqrt(x: Var) -> Var:
+    return op.sqrt(x)
+
+
+# Unary - exponential
+
+
+@prepare_ufunc_call(floating=1)
+def log(x: Var) -> Var:
+    return op.log(x)
+
+
+@prepare_ufunc_call(floating=1)
+def exp(x: Var) -> Var:
+    return op.exp(x)
+
+
 # Trigonometric
 
 

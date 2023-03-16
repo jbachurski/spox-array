@@ -28,3 +28,17 @@ def test_reduces(reduce):
     assert_equiv_prop(reduce, np.array([[1, 3], [6, 8]]), axis=(0, 1))
     assert_equiv_prop(reduce, np.array([[1, 3], [6, 8]]), axis=0)
     assert_equiv_prop(reduce, np.array([[1, 3], [6, 8]]), axis=1)
+
+
+@pytest.mark.parametrize("reduce", [np.argmin, np.argmax])
+def test_reduces_one_axis(reduce):
+    a = np.array([[1, 3], [6, 8]], np.float32)  # f32 for ORT support
+    assert_equiv_prop(reduce, a)
+    assert_equiv_prop(reduce, a, axis=0)
+    assert_equiv_prop(reduce, a, axis=1)
+
+
+def test_round():
+    a = np.array([-1, -0.7, 0.3, 0.1, 0.7, 1])
+    assert_equiv_prop(np.around, a)
+    assert_equiv_prop(np.round_, a)

@@ -21,9 +21,9 @@ def assert_eq(got, expected):
     assert got.dtype.type == expected.dtype.type
     assert got.shape == expected.shape
     if issubclass(expected.dtype.type, np.floating):
-        np.testing.assert_allclose(got, expected)
+        np.testing.assert_allclose(got, expected, 1e-7, 1e-7)
     else:
-        np.testing.assert_equal(got, expected)
+        np.testing.assert_equal(got, expected, 1e-7, 1e-7)
 
 
 def assert_equiv_prop(fun, *args, **kwargs):

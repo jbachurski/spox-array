@@ -65,26 +65,56 @@ def sum_(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
 @implements
 @wrap_axis_singleton
 @prepare_call(array_args=1, floating=1)
-def mean(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
+def mean(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_mean(var, axes=axis, keepdims=keepdims)
 
 
 @implements
 @wrap_axis_singleton
 @prepare_call(array_args=1)
-def amin(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
+def amin(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_min(var, axes=axis, keepdims=keepdims)
 
 
 @implements
 @wrap_axis_singleton
 @prepare_call(array_args=1)
-def amax(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
+def amax(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_max(var, axes=axis, keepdims=keepdims)
 
 
 @implements
 @wrap_axis_singleton
 @prepare_call(array_args=1)
-def prod(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
+def prod(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_prod(var, axes=axis, keepdims=keepdims)
+
+
+@implements
+@prepare_call(array_args=1)
+def argmin(var: Var, axis: int | None = None, keepdims: bool = False) -> Var:
+    if axis is None:
+        var = op.reshape(var, const([-1]))
+        axis = 0
+    return op.arg_min(var, axis=axis, keepdims=keepdims)
+
+
+@implements
+@prepare_call(array_args=1)
+def argmax(var: Var, axis: int | None = None, keepdims: bool = False) -> Var:
+    if axis is None:
+        var = op.reshape(var, const([-1]))
+        axis = 0
+    return op.arg_max(var, axis=axis, keepdims=keepdims)
+
+
+@implements
+@prepare_call(floating=1)
+def round_(x: Var) -> Var:
+    return op.round(x)
+
+
+@implements
+@prepare_call(floating=1)
+def around(x: Var) -> Var:
+    return op.round(x)
