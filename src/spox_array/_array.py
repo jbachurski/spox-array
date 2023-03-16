@@ -61,6 +61,19 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
     def shape(self) -> tuple[int | str | None, ...]:
         return self._var.unwrap_tensor().shape
 
+    @property
+    def ndim(self) -> int:
+        return len(self.shape)
+
+    @property
+    def size(self) -> int | None:
+        r = 1
+        for x in self.shape:
+            if not isinstance(x, int):
+                return None
+            r *= x
+        return r
+
     def __repr__(self):
         return f"{self.__class__.__name__}({self._var})"
 
@@ -130,16 +143,12 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             return SpoxArray(indexed)
         raise TypeError(f"Cannot index SpoxArray with {index_!r}.")
 
-    def mean(
-        self,
-        axis: int | tuple[int, ...] | None = None,
-        dtype: npt.DTypeLike = None,
-        out=None,
-        keepdims: bool = False,
-    ) -> "SpoxArray":
-        return SpoxArray(
-            np.mean(self, axis=axis, dtype=dtype, out=out, keepdims=keepdims)
-        )
+    @property
+    def T(self) -> "SpoxArray":
+        return SpoxArray(np.transpose(self))
+
+    def mean(self, **kwargs) -> "SpoxArray":
+        return SpoxArray(np.mean(self, **kwargs))
 
 
 def promote(
