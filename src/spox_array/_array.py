@@ -37,7 +37,13 @@ def const(value: npt.ArrayLike, dtype: npt.DTypeLike = None) -> Var:
 class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
     _var: Var
 
-    def __init__(self, var: Var):
+    def __init__(self, obj: npt.ArrayLike | Var | "SpoxArray"):
+        if isinstance(obj, Var):
+            var = obj
+        elif isinstance(obj, SpoxArray):
+            var = obj.__var__()
+        else:
+            var = op.const(obj)
         self._var = var
         if self._var.unwrap_tensor().shape is None:
             raise TypeError("Rank of a SpoxArray must be known.")
@@ -123,6 +129,17 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
                 indexed = op.gather(indexed, const(axis_index), axis=axis)
             return SpoxArray(indexed)
         raise TypeError(f"Cannot index SpoxArray with {index_!r}.")
+
+    def mean(
+        self,
+        axis: int | tuple[int, ...] | None = None,
+        dtype: npt.DTypeLike = None,
+        out=None,
+        keepdims: bool = False,
+    ) -> "SpoxArray":
+        return SpoxArray(
+            np.mean(self, axis=axis, dtype=dtype, out=out, keepdims=keepdims)
+        )
 
 
 def promote(

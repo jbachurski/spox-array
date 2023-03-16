@@ -14,7 +14,7 @@ def test_col_loss():
 
 
 def diff_loss(a: np.ndarray) -> np.ndarray:
-    return np.mean(0.5 + (a[:-1] - a[1:]) ** 2)
+    return (0.5 + (a[:-1] - a[1:]) ** 2).mean(dtype=np.float16)
 
 
 def test_diff_loss():
