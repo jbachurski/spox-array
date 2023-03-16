@@ -108,7 +108,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
     def reshape(self, shape, **kwargs) -> "SpoxArray":
         return SpoxArray(np.reshape(self, shape, **kwargs))
 
-    def flatten(self):
+    def flatten(self) -> "SpoxArray":
         return self.reshape((-1,))
 
     def sum(self, **kwargs) -> "SpoxArray":
