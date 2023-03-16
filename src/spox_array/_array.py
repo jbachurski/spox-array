@@ -1,5 +1,4 @@
 import functools
-import operator
 from typing import Any, Iterable, Optional, Sequence
 
 import numpy as np
@@ -9,11 +8,11 @@ import numpy.typing as npt
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
+from ._extops import const
+from ._index import getitem, setitem
+
 UFUNC_HANDLERS: dict[str, dict[str, Any]] = {}
 FUNCTION_HANDLERS: dict[str, Any] = {}
-
-INDEX_MIN: int = np.iinfo(np.int64).min
-INDEX_MAX: int = np.iinfo(np.int64).max
 
 
 def implements(target=None, *, name: str | None = None, method: str | None = None):
@@ -28,10 +27,6 @@ def implements(target=None, *, name: str | None = None, method: str | None = Non
         return fun
 
     return decorator if target is None else decorator(target)
-
-
-def const(value: npt.ArrayLike, dtype: npt.DTypeLike = None) -> Var:
-    return op.constant(value=np.array(value, dtype))
 
 
 class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
@@ -94,54 +89,11 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             return FUNCTION_HANDLERS[func.__name__](*args, **kwargs)
         return NotImplemented
 
-    def __getitem__(self, index):
-        index_ = index
-        try:
-            index = operator.index(index)
-        except TypeError:
-            pass
-        else:
-            pass
-        if isinstance(index, slice):
-            index = (index,) + (slice(None),) * (len(self.shape) - 1)
-        if isinstance(index, tuple):
-            axis_slices = {
-                d: axis_slice
-                for d, axis_slice in enumerate(index)
-                if isinstance(axis_slice, slice) and axis_slice != slice(None)
-            }
-            axis_indices = {
-                d: axis_index
-                for d, axis_index in enumerate(index)
-                if isinstance(axis_index, int)
-            }
-            starts: list[int] = [
-                x.start if x.start is not None else 0 for x in axis_slices.values()
-            ]
-            ends: list[int] = [
-                x.stop
-                if x.stop is not None
-                else (INDEX_MAX if x.step is None or x.step > 0 else INDEX_MIN)
-                for x in axis_slices.values()
-            ]
-            steps: list[int] = [
-                x.step if x.step is not None else 1 for x in axis_slices.values()
-            ]
-            indexed: Var = (
-                op.slice(
-                    self.__var__(),
-                    const(starts),
-                    const(ends),
-                    const(list(axis_slices.keys())),
-                    const(steps),
-                )
-                if axis_slices
-                else self.__var__()
-            )
-            for axis, axis_index in sorted(axis_indices.items(), reverse=True):
-                indexed = op.gather(indexed, const(axis_index), axis=axis)
-            return SpoxArray(indexed)
-        raise TypeError(f"Cannot index SpoxArray with {index_!r}.")
+    def __getitem__(self, index) -> "SpoxArray":
+        return SpoxArray(getitem(self.__var__(), index))
+
+    def __setitem__(self, index, value) -> None:
+        self.__var__(setitem(self.__var__(), index, value))
 
     @property
     def T(self) -> "SpoxArray":
@@ -256,35 +208,6 @@ def promote_args(obj=None, *, array_args: int | None = None, floating: int = 0):
     return wrapper(obj) if obj is not None else wrapper
 
 
-def handle_out(fun):
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        out = kwargs.pop("out", None)
-        result: SpoxArray = fun(*args, **kwargs)
-        if out is not None:
-            if not isinstance(out, SpoxArray):
-                raise TypeError(
-                    f"Output for SpoxArrays must also be written to one, not {type(out).__name__}."
-                )
-            out.__var__(result.__var__())
-            return out
-        return result
-
-    return inner
-
-
-def var_wrapper(fun):
-    @functools.wraps(fun)
-    def inner(*args, **kwargs):
-        flat_args, restructure = _nested_structure(args)
-        re_args = restructure(
-            *(arg.__var__() if isinstance(arg, SpoxArray) else arg for arg in flat_args)
-        )
-        return SpoxArray(fun(*re_args, **kwargs))
-
-    return inner
-
-
 @implements
 def result_type(*args):
     targets: list[np.dtype | npt.ArrayLike] = [
@@ -294,17 +217,3 @@ def result_type(*args):
         for x in args
     ]
     return np.dtype(np.result_type(*targets))
-
-
-def prepare_call(obj=None, *, array_args: int | None = None, floating: int = 0):
-    def wrapper(fun):
-        @handle_out
-        @promote_args(array_args=array_args, floating=floating)
-        @var_wrapper
-        @functools.wraps(fun)
-        def inner(*args, **kwargs):
-            return fun(*args, **kwargs)
-
-        return inner
-
-    return wrapper(obj) if obj is not None else wrapper

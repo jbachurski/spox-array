@@ -5,7 +5,8 @@ import numpy as np
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import const, implements, prepare_call
+from ._array import const, implements
+from ._impl import prepare_call
 
 
 def prepare_ufunc_call(obj=None, *, floating: int = 0):

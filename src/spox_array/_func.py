@@ -4,7 +4,8 @@ from typing import Iterable, Sequence
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import const, implements, prepare_call
+from ._array import const, implements
+from ._impl import prepare_call
 
 
 def wrap_axis_singleton(obj=None, var: bool = False):
