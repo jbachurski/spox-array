@@ -44,7 +44,7 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
             var = obj.__var__()
         else:
             var = op.const(obj)
-        self._var = var
+        self.__var__(var)
         if self._var.unwrap_tensor().shape is None:
             raise TypeError("Rank of a SpoxArray must be known.")
 

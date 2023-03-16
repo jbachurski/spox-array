@@ -4,6 +4,10 @@ import pytest
 from spox_array.testing import assert_equiv_prop
 
 
+def test_copy():
+    assert_equiv_prop(np.copy, np.array([[1, 2, 3], [4, 5, 6]]))
+
+
 def test_reshape():
     assert_equiv_prop(np.reshape, np.array([[1, 2, 3], [4, 5, 6]]), (1, 2, 3))
 
