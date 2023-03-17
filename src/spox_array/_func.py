@@ -4,7 +4,7 @@ from typing import Iterable, Sequence
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import const, implements
+from ._array import SpoxArray, const, implements, promote, to_var
 from ._impl import prepare_call
 
 
@@ -118,3 +118,14 @@ def round_(x: Var) -> Var:
 @prepare_call(floating=1)
 def around(x: Var) -> Var:
     return op.round(x)
+
+
+@implements
+@prepare_call(array_args=3)
+def clip(x: Var, a: Var | None, b: Var | None) -> Var:
+    return op.clip(x, a, b)
+
+
+@implements
+def where(x, a, b) -> SpoxArray:
+    return SpoxArray(op.where(to_var(x), *promote(to_var(a), to_var(b))))

@@ -42,3 +42,15 @@ def test_round():
     a = np.array([-1, -0.7, 0.3, 0.1, 0.7, 1])
     assert_equiv_prop(np.around, a)
     assert_equiv_prop(np.round_, a)
+
+
+def test_clip():
+    assert_equiv_prop(np.clip, np.array([1, 2, 3, 4]), 2, 3)
+    assert_equiv_prop(np.clip, np.array([1, 2, 3, 4]), 3, None)
+    assert_equiv_prop(np.clip, np.array([1, 2, 3, 4]), None, 2)
+
+
+def test_where():
+    assert_equiv_prop(
+        np.where, np.array([True, False, True, False]), [-1, -2, -3, -4], [1, 2, 3, 4]
+    )

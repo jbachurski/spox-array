@@ -129,46 +129,52 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
         return SpoxArray(np.prod(self, **kwargs))
 
 
+def to_var(
+    x: Var | SpoxArray | npt.ArrayLike,
+    dtype: npt.DTypeLike | None = None,
+    *,
+    casting: str | None = None,
+) -> Var:
+    if isinstance(x, SpoxArray):
+        x = x.__var__()
+    if isinstance(x, Var):
+        x_dtype = x.unwrap_tensor().dtype
+        if casting is not None and not np.can_cast(x_dtype, dtype, casting):
+            raise TypeError(f"Cannot cast {x_dtype} to {dtype} with {casting=}.")
+        return x if dtype is None or x_dtype == dtype else op.cast(x, to=dtype)
+    if casting is not None and not np.can_cast(x, dtype, casting):
+        raise TypeError(f"Cannot cast {x} to {dtype} with {casting=}.")
+    return const(x, dtype)
+
+
 def promote(
-    *args: Var | SpoxArray | npt.ArrayLike,
+    *args: Var | SpoxArray | npt.ArrayLike | None,
     floating: int = 0,
     casting: str = "same_kind",
     dtype: Any = None,
-) -> Sequence[SpoxArray]:
-    """
-    Apply constant promotion and type promotion to given parameters,
-    creating constants and/or casting.
-    """
+) -> Sequence[SpoxArray | None]:
     if not args:
         return ()
     if dtype is None:
-        target_type = result_type(*args)
+        on_args = (a for a in args if a is not None)
         if floating <= 0:
-            target_type = result_type(*args)
+            target_type = result_type(*on_args)
         elif floating <= 1:
-            target_type = result_type(*args, np.float16)
+            target_type = result_type(*on_args, np.float16)
         elif floating <= 2:
+            target_type = result_type(*on_args)
             target_type = np.common_type(np.array([], target_type))
         else:
             raise ValueError(f"Bad flag for floating: {floating}.")
     else:
         target_type = dtype
 
-    def _promote_target(obj: Var | npt.ArrayLike) -> Optional[Var]:
-        to_cast = obj.dtype if isinstance(obj, SpoxArray) else obj
-        if casting is not None and not np.can_cast(to_cast, target_type, casting):
-            raise TypeError(
-                f"Cannot cast {obj.dtype} to {target_type} with {casting=}."
-            )
-        if isinstance(obj, SpoxArray):
-            return (
-                op.cast(obj.__var__(), to=target_type)
-                if obj.dtype != target_type
-                else obj.__var__()
-            )
-        return const(obj, dtype=target_type)
+    def _promote_target(obj: Var | npt.ArrayLike | None) -> Optional[Var]:
+        if obj is None:
+            return None
+        return to_var(obj, target_type, casting=casting)
 
-    return tuple(SpoxArray(var) for var in map(_promote_target, args))
+    return tuple(var for var in map(_promote_target, args))
 
 
 def _nested_structure(xs):
