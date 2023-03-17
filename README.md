@@ -12,7 +12,7 @@ into functions like [these](https://github.com/jbachurski/spox-array/blob/main/t
 ```py
 import numpy as np
 from spox_array import wrap, unwrap
-from spox import argument, Tensor, Var
+from spox import argument, build, Tensor, Var
 
 # SpoxArray implements a np.ndarray (though it isn't a subclass)
 # and can be passed to these
@@ -34,15 +34,25 @@ y: Var = argument(Tensor(float, ('M',)))
 g: Var = unwrap(diff_loss(wrap(y)))
 
 # Do whatever you would like in Spox with the Vars f and g!
+# For example, built the above into a model:
+model = build({'x': x, 'y': y}, {'f': f, 'g': g})
 ```
+
+Since SpoxArray performs a normal Spox construction, propagated values
+(eager execution) may be viewed, and all intermediate values are typed.
 
 ## Features
 
-Currently, only a few features are implemented:
+Only some `numpy` features are implemented:
 
-- Basic arithmetic (ufunc calls)
-- Index access (`__getitem__`)
-- Numpy functions: `np.mean`, `np.concatenate`.
+- Numpy-compatible type promotion (in most cases)
+- A good part of the ufuncs (arithmetic, trigonometry) with operator overloading – as defined in `_ufunc.py`
+- Index access and updates (`__getitem__`, `__setitem__`)
+- Most common array methods (like `.shape`, `.T`, `.astype`, ...)
+- Various numpy functions – as defined in `_func.py`
+
+As SpoxArray tries to be compatible with the `numpy` dispatcher,
+the API is kept closer to `numpy` than the Array API standard.
 
 ## Development
 
