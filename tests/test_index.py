@@ -56,3 +56,17 @@ def test_set_integer_mask():
         a[[2, 1]] = a[:2]
 
     assert_equiv_prop(run, ARRAY[..., np.newaxis])
+
+
+def test_set_slices():
+    def run(a):
+        a[1:] = a[:2]
+
+    assert_equiv_prop(run, ARRAY[..., np.newaxis])
+
+
+def test_set_index():
+    def run(a):
+        a[:, 0] = a[:, 1]
+
+    assert_equiv_prop(run, ARRAY[..., np.newaxis])
