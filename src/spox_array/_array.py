@@ -93,6 +93,8 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
         return SpoxArray(getitem(self.__var__(), index))
 
     def __setitem__(self, index, value) -> None:
+        if isinstance(value, SpoxArray):
+            value = value.__var__()
         self.__var__(setitem(self.__var__(), index, value))
 
     @property
