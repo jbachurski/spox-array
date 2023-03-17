@@ -7,7 +7,7 @@ import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
 from ._array import SpoxArray, const, implements, promote, to_var
-from ._impl import prepare_call
+from ._impl import handle_out, prepare_call
 
 
 def wrap_axis_singleton(obj=None, *, i: int | None = None, var: bool = False):
@@ -166,3 +166,24 @@ def vstack(vs: Sequence[Var]) -> Var:
     if rank == 1:
         arrays = [np.expand_dims(a, 0) for a in arrays]
     return to_var(np.concatenate(arrays, axis=0))
+
+
+@implements
+@handle_out
+def compress(condition, a, axis: int | None = None) -> SpoxArray:
+    return SpoxArray(op.compress(to_var(a), to_var(condition), axis=axis))
+
+
+@implements
+@prepare_call(array_args=1)
+def cumsum(a: Var, axis: int | None = None) -> Var:
+    if axis is None:
+        a = op.reshape(a, const([-1]))
+        axis = 0
+    return op.cum_sum(a, const(axis))
+
+
+@implements
+def einsum(subscripts: str, *args, optimize: bool = False) -> SpoxArray:
+    _ = optimize
+    return SpoxArray(op.einsum([to_var(a) for a in args], equation=subscripts))

@@ -80,3 +80,26 @@ def test_vstack():
     assert_equiv_prop(
         np.vstack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
     )
+
+
+def test_compress():
+    a = np.array([[1, 2, 3], [4, 5, 6]])
+    assert_equiv_prop(np.compress, [False, True, True], a, axis=1)
+    assert_equiv_prop(np.compress, [False, True], a, axis=0)
+
+
+def test_cumsum():
+    a = np.array([[1, 2, 3], [4, 5, 6]])
+    assert_equiv_prop(np.cumsum, a)
+    assert_equiv_prop(np.cumsum, a, 0)
+    assert_equiv_prop(np.cumsum, a, axis=1)
+
+
+def test_einsum():
+    a = np.array([[1, 2]])
+    b = np.array([[3, 4, 5], [6, 7, 8]])
+    c = np.array([[1, 2], [3, 4]])
+    assert_equiv_prop(np.einsum, "ii", c)
+    assert_equiv_prop(np.einsum, "ii->i", c)
+    assert_equiv_prop(np.einsum, "ij->ji", b)
+    assert_equiv_prop(np.einsum, "ij,jk", a, b)

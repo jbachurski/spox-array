@@ -178,7 +178,7 @@ def promote(
 
 
 def _nested_structure(xs):
-    if not isinstance(xs, Iterable) or isinstance(xs, numpy.ndarray):
+    if not isinstance(xs, Iterable) or isinstance(xs, (str, numpy.ndarray)):
         return [xs], lambda x: x
     sub = [_nested_structure(x) for x in xs]
     flat: list[Any] = sum((chunk for chunk, _ in sub), [])
