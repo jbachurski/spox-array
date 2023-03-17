@@ -54,3 +54,29 @@ def test_where():
     assert_equiv_prop(
         np.where, np.array([True, False, True, False]), [-1, -2, -3, -4], [1, 2, 3, 4]
     )
+
+
+def test_expand_dims():
+    a = np.array([[1, 2, 3], [4, 5, 6]])
+    assert_equiv_prop(np.expand_dims, a, 0)
+    assert_equiv_prop(np.expand_dims, a, (1, 2))
+
+
+def test_squeeze():
+    a = np.array([[[1, 2, 3], [4, 5, 6]]])
+    assert_equiv_prop(np.squeeze, a)
+    assert_equiv_prop(np.squeeze, a, 0)
+
+
+def test_hstack():
+    assert_equiv_prop(np.hstack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
+    assert_equiv_prop(
+        np.hstack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
+    )
+
+
+def test_vstack():
+    assert_equiv_prop(np.vstack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
+    assert_equiv_prop(
+        np.vstack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
+    )

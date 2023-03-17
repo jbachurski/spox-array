@@ -1,5 +1,7 @@
 import functools
-from typing import Iterable, Sequence
+from typing import Any, Iterable, Sequence
+
+import numpy as np
 
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
@@ -8,22 +10,25 @@ from ._array import SpoxArray, const, implements, promote, to_var
 from ._impl import prepare_call
 
 
-def wrap_axis_singleton(obj=None, var: bool = False):
+def wrap_axis_singleton(obj=None, *, i: int | None = None, var: bool = False):
     def wrapper(fun):
         @functools.wraps(fun)
         def inner(*args, **kwargs):
-            if (
-                "axis" in kwargs
-                and kwargs["axis"] is not None
-                and not isinstance(kwargs["axis"], Iterable)
-            ):
-                kwargs["axis"] = (kwargs["axis"],)
-            if (
-                var
-                and kwargs.get("axis") is not None
-                and not isinstance(kwargs["axis"], Var)
-            ):
-                kwargs["axis"] = const(kwargs["axis"])
+            axis: Any = None
+            if "axis" in kwargs:
+                axis = kwargs["axis"]
+            elif i is not None and i < len(args):
+                axis = args[i]
+            if axis is not None and not isinstance(axis, Iterable):
+                axis = (axis,)
+            if var and axis is not None and not isinstance(axis, Var):
+                axis = const(axis)  # type: ignore
+            if axis is not None:
+                if i is not None and i < len(args):
+                    args = args[:i] + (axis,) + args[i + 1 :]
+                    kwargs.pop("axis", None)
+                else:
+                    kwargs["axis"] = axis
             return fun(*args, **kwargs)
 
         return inner
@@ -56,35 +61,35 @@ def concatenate(arrays: Sequence[Var], axis: int = 0) -> Var:
 
 
 @implements(name="sum")
-@wrap_axis_singleton(var=True)
+@wrap_axis_singleton(i=1, var=True)
 @prepare_call(array_args=1)
 def sum_(var: Var, axis: Var | None = None, keepdims: bool = False) -> Var:
     return op.reduce_sum(var, axes=axis, keepdims=keepdims)
 
 
 @implements
-@wrap_axis_singleton
+@wrap_axis_singleton(i=1)
 @prepare_call(array_args=1, floating=1)
 def mean(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_mean(var, axes=axis, keepdims=keepdims)
 
 
 @implements
-@wrap_axis_singleton
+@wrap_axis_singleton(i=1)
 @prepare_call(array_args=1)
 def amin(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_min(var, axes=axis, keepdims=keepdims)
 
 
 @implements
-@wrap_axis_singleton
+@wrap_axis_singleton(i=1)
 @prepare_call(array_args=1)
 def amax(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_max(var, axes=axis, keepdims=keepdims)
 
 
 @implements
-@wrap_axis_singleton
+@wrap_axis_singleton(i=1)
 @prepare_call(array_args=1)
 def prod(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) -> Var:
     return op.reduce_prod(var, axes=axis, keepdims=keepdims)
@@ -129,3 +134,35 @@ def clip(x: Var, a: Var | None, b: Var | None) -> Var:
 @implements
 def where(x, a, b) -> SpoxArray:
     return SpoxArray(op.where(to_var(x), *promote(to_var(a), to_var(b))))
+
+
+@implements
+@wrap_axis_singleton(i=1, var=True)
+@prepare_call(array_args=1)
+def expand_dims(a: Var, axis: Var) -> Var:
+    return op.unsqueeze(a, axis)
+
+
+@implements
+@wrap_axis_singleton(i=1, var=True)
+@prepare_call(array_args=1)
+def squeeze(a: Var, axis: Var | None = None) -> Var:
+    return op.squeeze(a, axis)
+
+
+@implements
+@prepare_call(array_args=1)
+def hstack(vs: Sequence[Var]) -> Var:
+    arrays = [SpoxArray(v) for v in vs]
+    rank = min(a.ndim for a in arrays)
+    return to_var(np.concatenate(arrays, axis=1 if rank > 1 else 0))
+
+
+@implements
+@prepare_call(array_args=1)
+def vstack(vs: Sequence[Var]) -> Var:
+    arrays = [SpoxArray(v) for v in vs]
+    rank = min(a.ndim for a in arrays)
+    if rank == 1:
+        arrays = [np.expand_dims(a, 0) for a in arrays]
+    return to_var(np.concatenate(arrays, axis=0))
