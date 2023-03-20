@@ -47,7 +47,7 @@ Only some `numpy` features are implemented:
 
 - Numpy-compatible type promotion (in most cases)
 - A good part of the ufuncs (arithmetic, trigonometry) with operator overloading – as defined in `_ufunc.py`
-- Index access and updates (`__getitem__`, `__setitem__`)
+- Index access (`__getitem__`)
 - Most common array methods (like `.shape`, `.T`, `.astype`, ...)
 - Various numpy functions – as defined in `_func.py`
 
