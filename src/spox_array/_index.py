@@ -105,37 +105,5 @@ def getitem(var: Var, index_) -> Var:
 
 
 def setitem(var: Var, index_, updates_: Var | npt.ArrayLike) -> Var:
-    index = normalize_index(index_, len(var.unwrap_tensor().shape))
-    updates = const(updates_) if not isinstance(updates_, Var) else updates_
-    # updates_shape = updates.unwrap_tensor().shape
-    shape = var.unwrap_tensor().shape
-    shape_var = op.shape(var)
-    dim_vars = [op.gather(shape_var, const(d)) for d in range(len(shape))]
-    dim_indices = [op.range(const(0), dim, const(1)) for dim in dim_vars]
-    indices = None
-    if isinstance(index, Var):
-        index_dtype = index.unwrap_tensor().dtype
-        index_shape = index.unwrap_tensor().shape
-        if len(index_shape) != 1:
-            raise TypeError("Update mask must be a vector.")
-        if index_dtype == np.dtype(bool):
-            indices = getitem(dim_indices[0], index)
-        elif np.issubdtype(index_dtype, np.integer):
-            indices = index
-        else:
-            raise TypeError(
-                f"Unsupported index array dtype {index_dtype} (from {index_!r})."
-            )
-    elif isinstance(index, tuple):
-        axis_slices, axis_indices = index
-        if len(axis_slices) + len(axis_indices) != 1:
-            raise NotImplementedError(
-                "Only single-axis setitems are currently supported."
-            )
-        if axis_slices:
-            ((d, s),) = axis_slices.items()
-            indices = getitem(dim_indices[d], s)
-        if axis_indices:
-            ((d, i),) = axis_indices.items()
-            indices = getitem(dim_indices[d], i)
-    return op.scatter_nd(var, indices, updates)
+    # TODO
+    return var

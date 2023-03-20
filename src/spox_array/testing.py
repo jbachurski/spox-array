@@ -23,7 +23,7 @@ def assert_eq(got, expected):
     if issubclass(expected.dtype.type, np.floating):
         np.testing.assert_allclose(got, expected, 1e-7, 1e-7)
     else:
-        np.testing.assert_equal(got, expected, 1e-7, 1e-7)
+        np.testing.assert_equal(got, expected)
 
 
 def assert_equiv_prop(fun, *args, **kwargs):
