@@ -5,7 +5,7 @@ import numpy as np
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import const, implements
+from ._array import implements
 from ._impl import prepare_call
 
 
@@ -63,7 +63,7 @@ def power(x: Var, y: Var) -> Var:
 @prepare_ufunc_call
 def isnan(x: Var) -> Var:
     if not np.issubdtype(x.unwrap_tensor().dtype, np.floating):
-        return op.expand(const(False), op.shape(x))
+        return op.expand(op.const(False), op.shape(x))
     return op.isnan(x)
 
 
@@ -197,4 +197,4 @@ def arctanh(x: Var) -> Var:
 @implements(name="add", method="reduce")
 @prepare_call
 def add_reduce(x: Var, axis: int = 0, keepdims: bool = False):
-    return op.reduce_sum(x, axes=const([axis]), keepdims=keepdims)
+    return op.reduce_sum(x, axes=op.const([axis]), keepdims=keepdims)

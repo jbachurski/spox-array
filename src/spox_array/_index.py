@@ -6,7 +6,6 @@ import numpy.typing as npt
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._extops import const
 
 INDEX_MIN: int = np.iinfo(np.int64).min
 INDEX_MAX: int = np.iinfo(np.int64).max
@@ -21,7 +20,7 @@ def normalize_index(
 ) -> Var | tuple[dict[tuple[int, int, int], slice], dict[int, int]]:
     index_ = index
     if isinstance(index, (list, np.ndarray)):
-        index = const(index)
+        index = op.const(index)
     if isinstance(index, Var):
         return index
     try:
@@ -90,16 +89,16 @@ def getitem(var: Var, index_) -> Var:
         indexed: Var = (
             op.slice(
                 var,
-                const(starts),
-                const(ends),
-                const(list(axis_slices.keys())),
-                const(steps),
+                op.const(starts),
+                op.const(ends),
+                op.const(list(axis_slices.keys())),
+                op.const(steps),
             )
             if axis_slices
             else var
         )
         for axis, axis_index in sorted(axis_indices.items(), reverse=True):
-            indexed = op.gather(indexed, const(axis_index), axis=axis)
+            indexed = op.gather(indexed, op.const(axis_index), axis=axis)
         return indexed
     raise TypeError(f"Cannot index with {index_!r}.")
 

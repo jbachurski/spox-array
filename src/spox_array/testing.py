@@ -1,23 +1,16 @@
-from typing import cast
-
 import numpy as np
 
-from spox import Var
-from spox_array._array import SpoxArray, _nested_structure
+from spox_array._array import SpoxArray, _nested_structure, wrap
 
 
-def arr(var: Var) -> np.ndarray:
-    return cast(np.ndarray, SpoxArray(var))  # type: ignore
-
-
-def val(array: np.ndarray):
-    if isinstance(array, SpoxArray):
-        return array._var._get_value()  # noqa
-    return np.asarray(array)
+def toarray(value):
+    if isinstance(value, SpoxArray):
+        return value._var._get_value()  # noqa
+    return np.array(value)
 
 
 def assert_eq(got, expected):
-    expected = np.array(expected)
+    got, expected = toarray(got), toarray(expected)
     assert got.dtype.type == expected.dtype.type
     assert got.shape == expected.shape
     if issubclass(expected.dtype.type, np.floating):
@@ -28,7 +21,7 @@ def assert_eq(got, expected):
 
 def assert_equiv_prop(fun, *args, **kwargs):
     flat_args, restructure = _nested_structure(args)
-    re_args = [arr(x) if isinstance(x, np.ndarray) else x for x in flat_args]
-    got = val(fun(*restructure(*re_args), **kwargs))
-    expected = val(fun(*args, **kwargs))
+    re_args = [wrap(x) if isinstance(x, np.ndarray) else x for x in flat_args]
+    got = toarray(fun(*restructure(*re_args), **kwargs))
+    expected = toarray(fun(*args, **kwargs))
     assert_eq(got, expected)

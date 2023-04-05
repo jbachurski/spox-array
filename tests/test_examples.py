@@ -1,7 +1,7 @@
 import numpy as np
 
-from spox_array import const
-from spox_array.testing import arr, assert_eq, val
+from spox_array import wrap
+from spox_array.testing import assert_eq
 
 
 def col_loss(a: np.ndarray) -> np.ndarray:
@@ -10,7 +10,7 @@ def col_loss(a: np.ndarray) -> np.ndarray:
 
 def test_col_loss():
     a = np.array([[1.0, 1.0], [3.0, 1.0], [5.0, 6.0]])
-    assert_eq(val(col_loss(arr(const(a)))), col_loss(a))
+    assert_eq(col_loss(wrap(a)), col_loss(a))
 
 
 def diff_loss(a: np.ndarray) -> np.ndarray:
@@ -19,4 +19,4 @@ def diff_loss(a: np.ndarray) -> np.ndarray:
 
 def test_diff_loss():
     a = np.array([[1.0, 1.0], [3.0, 1.0], [5.0, 6.0]])
-    assert_eq(val(diff_loss(arr(const(a)))), diff_loss(a))
+    assert_eq(diff_loss(wrap(a)), diff_loss(a))

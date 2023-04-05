@@ -6,7 +6,7 @@ import numpy as np
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._array import SpoxArray, const, implements, promote, to_var
+from ._array import SpoxArray, implements, promote, to_var
 from ._impl import handle_out, prepare_call
 
 
@@ -22,7 +22,7 @@ def wrap_axis_singleton(obj=None, *, i: int | None = None, var: bool = False):
             if axis is not None and not isinstance(axis, Iterable):
                 axis = (axis,)
             if var and axis is not None and not isinstance(axis, Var):
-                axis = const(axis)  # type: ignore
+                axis = op.const(axis)  # type: ignore
             if axis is not None:
                 if i is not None and i < len(args):
                     args = args[:i] + (axis,) + args[i + 1 :]
@@ -45,7 +45,7 @@ def copy(var: Var) -> Var:
 @implements
 @prepare_call(array_args=1)
 def reshape(var: Var, shape: Iterable[int]) -> Var:
-    return op.reshape(var, const(list(shape)))
+    return op.reshape(var, op.const(list(shape)))
 
 
 @implements
@@ -99,7 +99,7 @@ def prod(var: Var, axis: Iterable[int] | None = None, keepdims: bool = False) ->
 @prepare_call(array_args=1)
 def argmin(var: Var, axis: int | None = None, keepdims: bool = False) -> Var:
     if axis is None:
-        var = op.reshape(var, const([-1]))
+        var = op.reshape(var, op.const([-1]))
         axis = 0
     return op.arg_min(var, axis=axis, keepdims=keepdims)
 
@@ -108,7 +108,7 @@ def argmin(var: Var, axis: int | None = None, keepdims: bool = False) -> Var:
 @prepare_call(array_args=1)
 def argmax(var: Var, axis: int | None = None, keepdims: bool = False) -> Var:
     if axis is None:
-        var = op.reshape(var, const([-1]))
+        var = op.reshape(var, op.const([-1]))
         axis = 0
     return op.arg_max(var, axis=axis, keepdims=keepdims)
 
@@ -178,9 +178,9 @@ def compress(condition, a, axis: int | None = None) -> SpoxArray:
 @prepare_call(array_args=1)
 def cumsum(a: Var, axis: int | None = None) -> Var:
     if axis is None:
-        a = op.reshape(a, const([-1]))
+        a = op.reshape(a, op.const([-1]))
         axis = 0
-    return op.cum_sum(a, const(axis))
+    return op.cum_sum(a, op.const(axis))
 
 
 @implements

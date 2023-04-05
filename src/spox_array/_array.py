@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Iterable, Optional, Sequence
+from typing import Any, Iterable, Optional, Sequence, cast
 
 import numpy as np
 import numpy.lib.mixins
@@ -8,7 +8,6 @@ import numpy.typing as npt
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
-from ._extops import const
 from ._index import getitem, setitem
 from ._numpy_dispatch import NumpyDispatchMixin
 
@@ -115,7 +114,7 @@ def to_var(
         return x if dtype is None or x_dtype == dtype else op.cast(x, to=dtype)
     if casting is not None and not np.can_cast(x, dtype, casting):
         raise TypeError(f"Cannot cast {x} to {dtype} with {casting=}.")
-    return const(x, dtype)
+    return op.const(x, dtype)
 
 
 def promote(
@@ -196,3 +195,16 @@ def result_type(*args):
         for x in args
     ]
     return np.dtype(np.result_type(*targets))
+
+
+def wrap(value: npt.ArrayLike | Var | SpoxArray) -> np.ndarray:
+    """Wrap a Var in a SpoxArray and cast the type-hint to `numpy.ndarray`."""
+    return cast(np.ndarray, SpoxArray(value))
+
+
+def unwrap(array: npt.ArrayLike | Var | SpoxArray) -> Var:
+    if isinstance(array, SpoxArray):
+        return array.__var__()
+    elif isinstance(array, Var):
+        return array
+    return op.const(array)
