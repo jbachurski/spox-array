@@ -68,17 +68,11 @@ def test_squeeze():
     assert_equiv_prop(np.squeeze, a, 0)
 
 
-def test_hstack():
-    assert_equiv_prop(np.hstack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
+@pytest.mark.parametrize("stack", [np.hstack, np.vstack])
+def test_stacks(stack):
+    assert_equiv_prop(stack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
     assert_equiv_prop(
-        np.hstack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
-    )
-
-
-def test_vstack():
-    assert_equiv_prop(np.vstack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
-    assert_equiv_prop(
-        np.vstack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
+        stack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
     )
 
 
