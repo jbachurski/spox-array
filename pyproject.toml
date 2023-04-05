@@ -1,12 +1,17 @@
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-include_trailing_comma = true
-ensure_newline_before_comments = true
-line_length = 88
-known_first_party = "spox"
-skip_glob = '\.eggs/*,\.git/*,\.venv/*,build/*,dist/*'
-default_section = 'THIRDPARTY'
+[tool.ruff]
+select = [
+    "F", "E", "W", "I", "N",
+    "UP",
+    "B", "COM", "C4", "Q", "RSE", "RET", "SIM", "TCH", "ARG", "PTH",
+    "PLE", "PLR", "PLW", "NPY", "RUF"
+]
+ignore = ["B905"]
+show-fixes = true
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
 
 [tool.mypy]
 python_version = "3.10"
