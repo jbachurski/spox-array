@@ -44,41 +44,37 @@ def test_get_slices_syntax():
     assert_equiv_prop(lambda a: a[::2, 0], ARRAY)
 
 
-@pytest.mark.skip()
 def test_set_boolean_mask():
     def run(a):
         a = a.copy()
-        a[[False, True, True]] = a[:2]
+        a[[False, True, True]] = a[:2].copy()
         return a
 
     assert_equiv_prop(run, ARRAY[..., np.newaxis])
 
 
-@pytest.mark.skip()
 def test_set_integer_mask():
     def run(a):
         a = a.copy()
-        a[[2, 1]] = a[:2]
+        a[[2, 1]] = a[:2].copy()
         return a
 
     assert_equiv_prop(run, ARRAY[..., np.newaxis])
 
 
-@pytest.mark.skip()
 def test_set_slices():
     def run(a):
         a = a.copy()
-        a[1:] = a[:2]
+        a[1:] = a[:2].copy()
         return a
 
     assert_equiv_prop(run, ARRAY[..., np.newaxis])
 
 
-@pytest.mark.skip()
 def test_set_index():
     def run(a):
         a = a.copy()
-        a[:, 0] = a[:, 1]
+        a[:, 0] = a[:, 1].copy()
         return a
 
     assert_equiv_prop(run, ARRAY[..., np.newaxis])

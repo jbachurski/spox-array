@@ -65,12 +65,11 @@ def getitem(var: Var, index_) -> Var:
         index_dtype = index.unwrap_tensor().dtype
         if index_dtype == np.dtype(bool):
             return op.compress(var, index, axis=0)
-        elif np.issubdtype(index_dtype, np.integer):
+        if np.issubdtype(index_dtype, np.integer):
             return op.gather(var, index, axis=0)
-        else:
-            raise TypeError(
-                f"Unsupported index array dtype {index_dtype} (from {index_!r}).",
-            )
+        raise TypeError(
+            f"Unsupported index array dtype {index_dtype} (from {index_!r}).",
+        )
     if isinstance(index, tuple):
         axis_slices, axis_indices = index
         starts: list[int] = [
@@ -102,6 +101,26 @@ def getitem(var: Var, index_) -> Var:
     raise TypeError(f"Cannot index with {index_!r}.")
 
 
+def ndindex(shape: Var) -> Var:
+    """
+    Returns a tensor of a given shape, with an added last axis for vectors of indices.
+    In essence, in the returned tensor `a[i][j][k][...] = vector(i, j, k, ...)`.
+    """
+    (rank,) = shape.unwrap_tensor().shape
+    ranges = [
+        op.range(op.const(0), op.gather(shape, op.const(i)), op.const(1))
+        for i in range(rank)
+    ]
+    fit_ranges = [
+        op.unsqueeze(r, op.const([j for j in range(rank) if i != j]))
+        for i, r in enumerate(ranges)
+    ]
+    expanded_ranges = [op.expand(r, shape) for r in fit_ranges]
+    return op.concat(
+        [op.unsqueeze(r, op.const([-1])) for r in expanded_ranges],
+        axis=-1,
+    )
+
+
 def setitem(var: Var, index_, updates_: Var | npt.ArrayLike) -> Var:
-    # TODO
-    return var
+    return op.scatter_nd(var, getitem(ndindex(op.shape(var)), index_), updates_)
