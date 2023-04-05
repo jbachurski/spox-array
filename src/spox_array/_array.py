@@ -10,26 +10,10 @@ from spox import Var
 
 from ._extops import const
 from ._index import getitem, setitem
-
-UFUNC_HANDLERS: dict[str, dict[str, Any]] = {}
-FUNCTION_HANDLERS: dict[str, Any] = {}
+from ._numpy_dispatch import NumpyDispatchMixin
 
 
-def implements(target=None, *, name: str | None = None, method: str | None = None):
-    def decorator(fun):
-        nonlocal name
-        if name is None:
-            name = fun.__name__
-        if method is not None:
-            UFUNC_HANDLERS.setdefault(name, {})[method] = fun
-        else:
-            FUNCTION_HANDLERS[name] = fun
-        return fun
-
-    return decorator if target is None else decorator(target)
-
-
-class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
+class SpoxArray(NumpyDispatchMixin):
     _var: Var
 
     def __init__(self, obj: npt.ArrayLike | Var | "SpoxArray"):
@@ -72,23 +56,6 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
     def __repr__(self):
         return f"{self.__class__.__name__}({self._var})"
 
-    def __array_ufunc__(self, ufunc: np.ufunc, method: str, *inputs, **kwargs):
-        _ = self  # Ignore self
-        if (
-            ufunc.__name__ in UFUNC_HANDLERS
-            and method in UFUNC_HANDLERS[ufunc.__name__]
-        ):
-            return UFUNC_HANDLERS[ufunc.__name__][method](*inputs, **kwargs)
-        return NotImplemented
-
-    def __array_function__(self, func, types, args, kwargs):
-        _ = self  # Ignore self
-        if set(types) != {SpoxArray}:
-            return NotImplemented
-        if func.__name__ in FUNCTION_HANDLERS:
-            return FUNCTION_HANDLERS[func.__name__](*args, **kwargs)
-        return NotImplemented
-
     def __getitem__(self, index) -> "SpoxArray":
         return SpoxArray(getitem(self.__var__(), index))
 
@@ -128,6 +95,9 @@ class SpoxArray(numpy.lib.mixins.NDArrayOperatorsMixin):
 
     def prod(self, **kwargs) -> "SpoxArray":
         return SpoxArray(np.prod(self, **kwargs))
+
+
+implements = SpoxArray.implements_numpy
 
 
 def to_var(
