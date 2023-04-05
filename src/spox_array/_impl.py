@@ -11,7 +11,8 @@ def handle_out(fun):
         if out is not None:
             if not isinstance(out, SpoxArray):
                 raise TypeError(
-                    f"Output for SpoxArrays must also be written to one, not {type(out).__name__}.",
+                    f"Output for SpoxArrays must also be written to one, "
+                    f"not {type(out).__name__}.",
                 )
             out.__var__(result.__var__())
             return out

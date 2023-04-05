@@ -71,8 +71,7 @@ def test_trig_ufunc(name, dtype):
     assert_equiv_prop(getattr(np, name), x)
 
 
-@pytest.mark.parametrize("name", TRIG_UFUNCS)
 @pytest.mark.parametrize("dtype", [np.float32])
-def test_recip(name, dtype):
+def test_recip(dtype):
     x = np.arange(0.5, 5, 0.5, dtype=dtype)
     assert_equiv_prop(np.reciprocal, x)

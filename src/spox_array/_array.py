@@ -65,7 +65,7 @@ class SpoxArray(NumpyDispatchMixin):
         self.__var__(setitem(var, index, value))
 
     @property
-    def T(self) -> "SpoxArray":
+    def T(self) -> "SpoxArray":  # noqa: N802
         return SpoxArray(np.transpose(self))
 
     def copy(self) -> "SpoxArray":
@@ -131,7 +131,7 @@ def promote(
             target_type = result_type(*on_args)
         elif floating <= 1:
             target_type = result_type(*on_args, np.float16)
-        elif floating <= 2:
+        elif floating <= 2:  # noqa: PLR2004
             target_type = result_type(*on_args)
             target_type = np.common_type(np.array([], target_type))
         else:
@@ -205,6 +205,6 @@ def wrap(value: npt.ArrayLike | Var | SpoxArray) -> np.ndarray:
 def unwrap(array: npt.ArrayLike | Var | SpoxArray) -> Var:
     if isinstance(array, SpoxArray):
         return array.__var__()
-    elif isinstance(array, Var):
+    if isinstance(array, Var):
         return array
     return op.const(array)
