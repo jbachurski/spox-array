@@ -2,7 +2,6 @@ import operator
 
 import numpy as np
 import pytest
-
 from spox_array.testing import assert_equiv_prop
 
 

@@ -1,7 +1,6 @@
 import functools
 
 import numpy as np
-
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 

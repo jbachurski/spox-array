@@ -2,10 +2,8 @@ import operator
 
 import numpy as np
 import numpy.typing as npt
-
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
-
 
 INDEX_MIN: int = np.iinfo(np.int64).min
 INDEX_MAX: int = np.iinfo(np.int64).max
@@ -16,10 +14,11 @@ def _int_or_none(x) -> bool:
 
 
 def normalize_index(
-    index, rank: int
+    index,
+    rank: int,
 ) -> Var | tuple[dict[tuple[int, int, int], slice], dict[int, int]]:
     index_ = index
-    if isinstance(index, (list, np.ndarray)):
+    if isinstance(index, list | np.ndarray):
         index = op.const(index)
     if isinstance(index, Var):
         return index
@@ -29,12 +28,12 @@ def normalize_index(
         pass
     else:
         pass
-    if isinstance(index, (int, slice)):
+    if isinstance(index, int | slice):
         index = (index,) + (slice(None),) * (rank - 1)
     if isinstance(index, tuple):
-        if not all(isinstance(d, (int, slice)) for d in index):
+        if not all(isinstance(d, int | slice) for d in index):
             raise TypeError(
-                f"Bad inferred axis-index types in {index!r} from {index_!r}"
+                f"Bad inferred axis-index types in {index!r} from {index_!r}",
             )
         if not all(
             all(map(_int_or_none, (d.start, d.stop, d.step)))
@@ -42,7 +41,7 @@ def normalize_index(
             if isinstance(d, slice)
         ):
             raise TypeError(
-                f"Bad inferred axis-slice types in {index!r} from {index_!r}"
+                f"Bad inferred axis-slice types in {index!r} from {index_!r}",
             )
         if any(d.step == 0 for d in index if isinstance(d, slice)):
             raise TypeError(f"Zero-step slice in {index!r} from {index_!r}")
@@ -70,7 +69,7 @@ def getitem(var: Var, index_) -> Var:
             return op.gather(var, index, axis=0)
         else:
             raise TypeError(
-                f"Unsupported index array dtype {index_dtype} (from {index_!r})."
+                f"Unsupported index array dtype {index_dtype} (from {index_!r}).",
             )
     if isinstance(index, tuple):
         axis_slices, axis_indices = index

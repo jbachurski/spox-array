@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from spox_array.testing import assert_equiv_prop
 
 
@@ -52,7 +51,10 @@ def test_clip():
 
 def test_where():
     assert_equiv_prop(
-        np.where, np.array([True, False, True, False]), [-1, -2, -3, -4], [1, 2, 3, 4]
+        np.where,
+        np.array([True, False, True, False]),
+        [-1, -2, -3, -4],
+        [1, 2, 3, 4],
     )
 
 
@@ -72,7 +74,8 @@ def test_squeeze():
 def test_stacks(stack):
     assert_equiv_prop(stack, [np.array([1, 2, 3]), np.array([4, 5, 6])])
     assert_equiv_prop(
-        stack, [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])]
+        stack,
+        [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])],
     )
 
 

@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from spox_array.testing import assert_equiv_prop
 
 ARRAY = np.array([[1, 3], [2, 6], [3, 9]])
@@ -23,7 +22,8 @@ def test_get_boolean_mask(m1, m2, m3):
 
 
 @pytest.mark.parametrize(
-    "pi", [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]]
+    "pi",
+    [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]],
 )
 def test_get_integer_mask(pi):
     assert_equiv_prop(lambda a: a[pi], ARRAY)

@@ -1,10 +1,10 @@
 import functools
-from typing import Any, Iterable, Optional, Sequence, cast
+from collections.abc import Iterable, Sequence
+from typing import Any, cast
 
 import numpy as np
 import numpy.lib.mixins
 import numpy.typing as npt
-
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 
@@ -139,7 +139,7 @@ def promote(
     else:
         target_type = dtype
 
-    def _promote_target(obj: Var | npt.ArrayLike | None) -> Optional[Var]:
+    def _promote_target(obj: Var | npt.ArrayLike | None) -> Var | None:
         if obj is None:
             return None
         return to_var(obj, target_type, casting=casting)
@@ -148,7 +148,7 @@ def promote(
 
 
 def _nested_structure(xs):
-    if not isinstance(xs, Iterable) or isinstance(xs, (str, numpy.ndarray)):
+    if not isinstance(xs, Iterable) or isinstance(xs, str | numpy.ndarray):
         return [xs], lambda x: x
     sub = [_nested_structure(x) for x in xs]
     flat: list[Any] = sum((chunk for chunk, _ in sub), [])

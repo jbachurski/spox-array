@@ -1,8 +1,8 @@
 import functools
-from typing import Any, Iterable, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 import numpy as np
-
 import spox.opset.ai.onnx.v17 as op
 from spox import Var
 

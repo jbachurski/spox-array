@@ -1,5 +1,4 @@
 import numpy as np
-
 from spox_array import wrap
 from spox_array.testing import assert_eq
 

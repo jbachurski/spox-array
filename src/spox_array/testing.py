@@ -5,7 +5,7 @@ from spox_array._array import SpoxArray, _nested_structure, wrap
 
 def toarray(value):
     if isinstance(value, SpoxArray):
-        return value._var._get_value()  # noqa
+        return value._var._get_value()
     return np.array(value)
 
 

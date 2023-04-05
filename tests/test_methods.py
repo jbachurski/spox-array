@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from spox_array.testing import assert_equiv_prop
 
 
@@ -27,7 +26,9 @@ def test_copy():
 
 def test_reshape():
     assert_equiv_prop(
-        lambda a, *args: a.reshape(*args), np.array([[1, 2, 3], [4, 5, 6]]), (1, 2, 3)
+        lambda a, *args: a.reshape(*args),
+        np.array([[1, 2, 3], [4, 5, 6]]),
+        (1, 2, 3),
     )
 
 

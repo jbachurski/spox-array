@@ -1,7 +1,6 @@
 import logging
 
 import pytest
-
 import spox._future
 
 

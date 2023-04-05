@@ -8,7 +8,13 @@ class NumpyDispatchMixin(np.lib.mixins.NDArrayOperatorsMixin):
     _function_handlers: ClassVar[dict[str, Any]] = {}
 
     @classmethod
-    def implements_numpy(cls, target=None, *, name: str | None = None, method: str | None = None):
+    def implements_numpy(
+        cls,
+        target=None,
+        *,
+        name: str | None = None,
+        method: str | None = None,
+    ):
         def decorator(fun):
             nonlocal name
             if name is None:
